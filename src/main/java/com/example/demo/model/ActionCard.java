@@ -1,9 +1,14 @@
 package com.example.demo.model;
-import com.example.demo.service.*;
 
+import com.example.demo.service.GameService;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonTypeName;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
+@JsonTypeName("action")
 public class ActionCard extends Card {
-    public ActionCard(Color color, int value) { super(color, value); }
+    @JsonCreator
+    public ActionCard(@JsonProperty("color") Color color, @JsonProperty("value") int value) { super(color, value); }
 
     @Override
     public boolean canPlayOn(Card topCard) {
@@ -12,7 +17,7 @@ public class ActionCard extends Card {
 
     @Override
     public void applyEffect(GameService game) {
-        if (this.getValue() == 10) { // Varsayalım 10 = Skip
+        if (this.getValue() == 10) { // 10 = Skip
             game.skipTurn();
         } else if (this.getValue() == 11) { // 11 = Draw Two
             game.penaltyDraw(2);

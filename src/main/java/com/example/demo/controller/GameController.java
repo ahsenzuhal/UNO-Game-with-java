@@ -1,49 +1,39 @@
 package com.example.demo.controller;
 
-import com.example.demo.dto.GameStatusResponse;
-import com.example.demo.dto.PlayerActionRequest;
+
+import java.util.Map;
 import com.example.demo.service.GameService;
+import com.example.demo.model.GameRoom;
 import lombok.RequiredArgsConstructor;
-import org.springframework.messaging.handler.annotation.MessageMapping;
-import org.springframework.messaging.handler.annotation.Payload;
+import org.springframework.messaging.handler.annotation.*;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
 
 @Controller
 @RequiredArgsConstructor
 public class GameController {
-
     private final GameService gameService;
-    private final SimpMessagingTemplate messagingTemplate; // Mesajları dağıtmak için
+    private final SimpMessagingTemplate messagingTemplate;
 
-    @MessageMapping("/game.play")
-    public void handlePlayerAction(@Payload PlayerActionRequest request) {
-        boolean success = false;
+    @MessageMapping("/game.join")
+    public void joinRoom(@Payload Map<String, String> message) {
+        String roomId = message.get("roomId");
+        String playerId = message.get("playerId");
+        String playerName = message.get("playerName");
 
-        // İstemciden gelen aksiyon tipine göre servisi çağır
-        switch (request.getActionType()) {
-            case PLAY_CARD:
-                success = gameService.playCard(request.getPlayerId(), request.getSelectedCard());
-                break;
-            case DRAW_CARD:
-                // gameService.drawCardForPlayer(request.getPlayerId());
-                success = true; 
-                break;
-            case SELECT_COLOR:
-                gameService.handleColorSelection(request.getChosenColor());
-                success = true;
-                break;
-        }
-
-        if (success) {
-            // Hamle başarılıysa, yeni oyun durumunu HERKESE gönder
-            broadcastGameState();
-        }
+        gameService.joinOrCreateRoom(roomId, playerId, playerName);
+        broadcastGameState(roomId);
     }
 
-    private void broadcastGameState() {
-        // Burada her iki oyuncuya da güncel durumu yayınlıyoruz
-        // İleride burayı özelleştirip her oyuncuya kendi elini göreceği şekilde güncelleyeceğiz
-        messagingTemplate.convertAndSend("/topic/game-state", "Oyun durumu güncellendi!");
+    private void broadcastGameState(String roomId) {
+        GameRoom room = gameService.getRoom(roomId);
+        if (room == null) return;
+
+        room.getPlayers().forEach(player -> {
+            messagingTemplate.convertAndSend(
+                "/topic/game-state/" + roomId + "/" + player.getId(), 
+                gameService.getGameState(roomId, player.getId())
+            );
+        });
     }
 }
