@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>UNO - Ahsen</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.5.0/sockjs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+    <style>
+        .card { border: 2px solid black; padding: 10px; display: inline-block; margin: 5px; border-radius: 8px; cursor: pointer; }
+        .RED { background-color: #ff5555; } .BLUE { background-color: #5555ff; }
+        .GREEN { background-color: #55aa55; } .YELLOW { background-color: #ffaa00; }
+        .WILD { background-color: #555; color: white; }
+    </style>
+</head>
+<body>
+    <h1>Port: <span id="portDisplay"></span></h1>
+    <div id="game-area">
+        <h2 id="status">Bağlanılıyor...</h2>
+        <div id="turn-info"></div>
+        <div id="top-card-area">
+            <h3>Yerdeki Kart:</h3>
+            <div id="top-card"></div>
+        </div>
+        <hr>
+        <h3>Senin Elin:</h3>
+        <div id="my-hand"></div>
+    </div>
+
+    <script>
+        var port = window.location.port;
+        document.getElementById('portDisplay').innerText = port;
+        var stompClient = null;
+        var playerId = "Player_" + port; // Port bilgisini ID olarak kullanıyoruz
+
+        function connect() {
+            var socket = new SockJS('/uno-game');
+            stompClient = Stomp.over(socket);
+            stompClient.connect({}, function (frame) {
+                document.getElementById('status').innerText = "Bağlandı - Oyuncu: " + playerId;
+                
+                // Sunucudan gelen oyun durumunu dinle
+                stompClient.subscribe('/topic/game-state', function (response) {
+                    renderGame(JSON.parse(response.body));
+                });
+            });
+        }
+
+        function renderGame(gameState) {
+            // Yerdeki kartı çiz
+            const topDiv = document.getElementById('top-card');
+            topDiv.innerHTML = `<div class="card ${gameState.topCard.color}">${gameState.topCard.value}</div>`;
+            
+            // Sıra kimde bilgisi
+            document.getElementById('turn-info').innerText = "Sıra: " + gameState.currentPlayerId;
+
+            // Elindeki kartları çiz (Sadece sana ait olanlar gelmeli, ileride düzelteceğiz)
+            const handDiv = document.getElementById('my-hand');
+            handDiv.innerHTML = '';
+            gameState.playerHand.forEach(card => {
+                const cardEl = document.createElement('div');
+                cardEl.className = `card ${card.color}`;
+                cardEl.innerText = card.value;
+                cardEl.onclick = () => playCard(card);
+                handDiv.appendChild(cardEl);
+            });
+        }
+
+        function playCard(card) {
+            stompClient.send("/app/game.play", {}, JSON.stringify({
+                playerId: playerId,
+                actionType: 'PLAY_CARD',
+                selectedCard: card
+            }));
+        }
+
+        connect();
+    </script>
+</body>
+</html>
