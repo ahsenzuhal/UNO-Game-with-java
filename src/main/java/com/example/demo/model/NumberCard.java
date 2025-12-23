@@ -8,8 +8,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 @JsonTypeName("number")
 public class NumberCard extends Card {
     @JsonCreator
-    public NumberCard(@JsonProperty("color") Color color, @JsonProperty("value") int value) {
-        super(color, value);
+    public NumberCard(@JsonProperty("color") Color color, @JsonProperty("value") int value) { 
+        super(color, value); 
     }
 
     @Override
@@ -18,7 +18,7 @@ public class NumberCard extends Card {
     }
 
     @Override
-    public void applyEffect(GameService game) {
-        game.moveToNextPlayer();
+    public void applyEffect(GameService game, String roomId) {
+        // Number cards have no special effect. Turn advancement handled by GameService.
     }
 }

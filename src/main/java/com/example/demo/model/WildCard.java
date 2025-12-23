@@ -7,22 +7,23 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 @JsonTypeName("wild")
 public class WildCard extends Card {
+    public WildCard(int value) { super(Color.WILD, value); }
 
     @JsonCreator
-    public WildCard(@JsonProperty("value") int value) { // 12 = Wild, 13 = Wild Draw Four
+    public WildCard(@JsonProperty("color") Color color, @JsonProperty("value") int value) {
         super(Color.WILD, value);
     }
 
     @Override
-    public boolean canPlayOn(Card topCard) {
-        return true; // Joker her zaman oynanır!
-    }
+    public boolean canPlayOn(Card topCard) { return true; } // Her zaman oynanır
 
     @Override
-    public void applyEffect(GameService game) {
-        if (this.getValue() == 13) {
-            game.penaltyDraw(4);
-            game.skipTurn();
+    public void applyEffect(GameService game, String roomId) {
+        if (this.getValue() == 13) { // Wild Draw Four
+            game.penaltyDraw(roomId, 4);
+            game.skipTurn(roomId);
         }
+        // Renk seçimi logic'i frontend tarafında gönderilecek ve
+        // GameService.playCard() tarafından currentActiveColor olarak atanacak.
     }
 }

@@ -25,7 +25,9 @@ public abstract class Card {
     }
 
     public abstract boolean canPlayOn(Card topCard);
-    public abstract void applyEffect(GameService game);
+    
+
+    public abstract void applyEffect(GameService game, String roomId);
 
     public Color getColor() {
         return color;

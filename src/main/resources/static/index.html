@@ -2,48 +2,129 @@
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
-    <title>UNO Oda Sistemi</title>
+    <title>UNO Online - Lobi Sistemi</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.5.0/sockjs.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
     <style>
-        /* Modernize edilmiş CSS */
-        body { font-family: 'Segoe UI', sans-serif; background: #eceff1; text-align: center; }
-        #login-screen { margin-top: 100px; padding: 40px; background: white; display: inline-block; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
-        .card { border: 2px solid #fff; padding: 15px; display: inline-block; margin: 5px; border-radius: 12px; width: 60px; height: 90px; color: white; font-weight: bold; cursor: pointer; box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
-        .RED { background-color: #ff5555; } .BLUE { background-color: #5555ff; } .GREEN { background-color: #55aa55; } .YELLOW { background-color: #ffaa00; } .WILD { background-color: #222; }
-        input { padding: 12px; margin: 10px; border: 1px solid #ccc; border-radius: 8px; width: 200px; }
-        button { padding: 12px 25px; background: #37474f; color: white; border: none; border-radius: 8px; cursor: pointer; }
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: radial-gradient(circle, #2c3e50 0%, #000000 100%);
+            color: white;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Wild kartın içine 4 renkli logo efekti */
+        .WILD::after {
+            content: "";
+            position: absolute;
+            width: 40px; height: 40px;
+            background: conic-gradient(#ff5555 0.25turn, #5555ff 0.25turn 0.5turn, #ffaa00 0.5turn 0.75turn, #55aa55 0.75turn);
+            border-radius: 50%; opacity: 0.3; z-index: 0;
+        }
+
+        #login-screen {
+            margin-top: 100px; padding: 40px;
+            background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px);
+            border-radius: 20px; text-align: center; border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        input { padding: 12px; margin: 10px; border-radius: 8px; border: none; width: 200px; }
+
+        #game-area { width: 95%; max-width: 1100px; margin-top: 20px; text-align: center; }
+        
+        .card {
+            position: relative; width: 90px; height: 135px; border-radius: 12px;
+            display: inline-flex; justify-content: center; align-items: center;
+            font-size: 28px; font-weight: bold; color: white; margin: 5px;
+            cursor: pointer; transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            border: 3px solid rgba(255, 255, 255, 0.3); box-shadow: 0 8px 15px rgba(0,0,0,0.4);
+            user-select: none; z-index: 1;
+        }
+
+        .card:hover { transform: translateY(-20px) scale(1.1); z-index: 10; border-color: white; }
+
+        .RED { background: linear-gradient(135deg, #ff5555 0%, #aa0000 100%); }
+        .BLUE { background: linear-gradient(135deg, #5555ff 0%, #0000aa 100%); }
+        .GREEN { background: linear-gradient(135deg, #55aa55 0%, #005500 100%); }
+        .YELLOW { background: linear-gradient(135deg, #ffaa00 0%, #cc8800 100%); color: black; }
+        .WILD { background: linear-gradient(135deg, #444 0%, #000 100%); }
+
+        #top-card-area {
+            background: rgba(255, 255, 255, 0.05); padding: 20px; border-radius: 50%;
+            width: 180px; height: 180px; display: inline-flex; flex-direction: column;
+            justify-content: center; align-items: center; margin: 20px;
+            border: 2px dashed rgba(255,255,255,0.2);
+        }
+
+        .controls { margin: 20px; }
+        button { padding: 12px 25px; font-weight: bold; border-radius: 50px; border: none; cursor: pointer; transition: 0.3s; margin: 5px; }
+        .btn-draw { background: #e74c3c; color: white; }
+        #uno-btn { background: #f39c12; color: white; display: none; animation: pulse 1s infinite; }
+
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.1); box-shadow: 0 0 20px #f39c12; } 100% { transform: scale(1); } }
+
+        #winner-overlay {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.9); z-index: 1000; justify-content: center; align-items: center; flex-direction: column;
+        }
     </style>
 </head>
 <body>
 
 <div id="login-screen">
-    <h1>UNO Online</h1>
+    <h1>🔴 🔵 UNO Online 🟢 🟡</h1>
     <input type="text" id="nameInput" placeholder="Adınız">
-    <input type="text" id="roomInput" placeholder="Oda No (Örn: 1001)">
+    <input type="text" id="roomInput" placeholder="Oda No">
     <br>
-    <button onclick="initGame()">Oyuna Katıl</button>
+    <button style="background: #2ecc71; color: white;" onclick="initGame()">OYUNA KATIL</button>
 </div>
 
 <div id="game-area" style="display:none;">
     <h2 id="roomStatus"></h2>
-    <h3 id="turnInfo"></h3>
+    <h1 id="turnInfo" style="color: #f1c40f;"></h1>
+    
     <div id="top-card-area">
-        <p>Yerdeki Kart</p>
+        <small>Yerdeki Kart</small>
         <div id="top-card"></div>
     </div>
+
+    <div class="controls">
+        <button class="btn-draw" onclick="drawCard()">KART ÇEK</button>
+        <button id="uno-btn" onclick="sayUno()">UNO!</button>
+    </div>
+
+    <div id="color-picker" style="display:none; position:fixed; top:50%; left:50%; transform:translate(-50%, -50%); background:rgba(0,0,0,0.95); padding:30px; border-radius:15px; z-index:2000; border: 2px solid white;">
+        <h3>Bir Renk Seç!</h3>
+        <button onclick="selectColor('RED')" style="background:red; color:white;">Kırmızı</button>
+        <button onclick="selectColor('BLUE')" style="background:blue; color:white;">Mavi</button>
+        <button onclick="selectColor('GREEN')" style="background:green; color:white;">Yeşil</button>
+        <button onclick="selectColor('YELLOW')" style="background:yellow; color:black;">Sarı</button>
+    </div>
+
     <div id="my-hand"></div>
+</div>
+
+<div id="winner-overlay">
+    <h1 style="font-size: 60px; color: #f1c40f;">TEBRİKLER!</h1>
+    <h2 id="winnerName" style="font-size: 40px;"></h2>
+    <button onclick="location.reload()" style="background: white; color: black;">YENİ OYUN</button>
 </div>
 
 <script>
     let stompClient = null;
     let playerId = "P" + Math.floor(Math.random() * 1000);
     let currentRoom = null;
+    let pendingWildCard = null;
 
     function initGame() {
         const name = document.getElementById('nameInput').value;
         currentRoom = document.getElementById('roomInput').value;
-        if (!name || !currentRoom) return alert("Lütfen isim ve oda no girin!");
+        if (!name || !currentRoom) return alert("Bilgileri doldurun!");
 
         const socket = new SockJS('/uno-game');
         stompClient = Stomp.over(socket);
@@ -56,28 +137,99 @@
             });
 
             stompClient.send("/app/game.join", {}, JSON.stringify({
-                roomId: currentRoom,
-                playerId: playerId,
-                playerName: name
+                roomId: currentRoom, playerId: playerId, playerName: name
             }));
         });
     }
 
-    function renderGame(state) {
-        if (!state) return;
-        document.getElementById('roomStatus').innerText = state.statusMessage;
-        document.getElementById('turnInfo').innerText = "Sıra: " + state.currentPlayerId;
-        if (state.topCard) {
-            document.getElementById('top-card').innerHTML = `<div class="card ${state.topCard.color}">${state.topCard.value}</div>`;
-        }
-        const handDiv = document.getElementById('my-hand');
-        handDiv.innerHTML = '<h3>Senin Elin</h3>';
-        state.playerHand.forEach(card => {
-            const cardEl = document.createElement('div');
-            cardEl.className = `card ${card.color}`;
-            cardEl.innerText = card.value;
-            handDiv.appendChild(cardEl);
-        });
+    function selectColor(color) {
+        stompClient.send("/app/game.play", {}, JSON.stringify({
+            roomId: currentRoom,
+            playerId: playerId,
+            actionType: 'PLAY_CARD',
+            selectedCard: { ...pendingWildCard, type: 'wild' },
+            chosenColor: color // Backend'e seçilen rengi gönderiyoruz
+        }));
+        document.getElementById('color-picker').style.display = 'none';
+        pendingWildCard = null;
+    }
+
+    window.renderGame = function(gameState) {
+    if (!gameState) return;
+    
+    document.getElementById('roomStatus').innerText = gameState.statusMessage;
+    document.getElementById('turnInfo').innerText = "Sıra: " + gameState.currentPlayerName;
+
+    // KAZANMA EKRANI KONTROLÜ
+    const winnerOverlay = document.getElementById('winner-overlay');
+    if (gameState.statusMessage === "TAMAMLANDI") {
+        winnerOverlay.style.display = 'flex';
+        document.getElementById('winnerName').innerText = gameState.currentPlayerName + " Kazandı!";
+        return; // Oyun bittiyse kart çizmeyi durdur
+    } else {
+        winnerOverlay.style.display = 'none';
+    }
+
+    const getCardValue = (card) => {
+        if (card.color === "WILD") return card.value === 13 ? "+4" : "✪";
+        if (card.value === 10) return "⊘";
+        if (card.value === 11) return "+2";
+        return card.value;
+    };
+
+    // YERDEKİ KARTI ÇİZ (Kilitlenme Çözümü Burada)
+    if (gameState.topCard) {
+        // Eğer bir renk seçilmişse, siyah kartı o renge boya
+        const displayColor = (gameState.activeColor && gameState.activeColor !== "WILD") 
+                             ? gameState.activeColor 
+                             : gameState.topCard.color;
+
+        document.getElementById('top-card').innerHTML = 
+            `<div class="card ${displayColor}">${getCardValue(gameState.topCard)}</div>`;
+    }
+
+    // ELİNDEKİ KARTLARI ÇİZ
+    const handDiv = document.getElementById('my-hand');
+    handDiv.innerHTML = '<h3>Senin Elin (' + gameState.playerHand.length + ')</h3>';
+    
+    gameState.playerHand.forEach(card => {
+        const cardEl = document.createElement('div'); 
+        cardEl.className = `card ${card.color}`;
+        cardEl.innerText = getCardValue(card);
+
+        cardEl.onclick = () => {
+            let cardType = (card.value >= 13) ? "wild" : (card.value >= 10 ? "action" : "number");
+
+            if (card.color === "WILD") {
+                pendingWildCard = card;
+                document.getElementById('color-picker').style.display = 'block';
+            } else {
+                stompClient.send("/app/game.play", {}, JSON.stringify({
+                    roomId: currentRoom,
+                    playerId: playerId,
+                    actionType: 'PLAY_CARD',
+                    selectedCard: { ...card, type: cardType }
+                }));
+            }
+        };
+        handDiv.appendChild(cardEl);
+    });
+
+    const unoBtn = document.getElementById('uno-btn');
+    if (unoBtn) {
+        unoBtn.style.display = (gameState.playerHand.length === 2) ? 'inline-block' : 'none';
+    }
+};
+
+    function drawCard() {
+        stompClient.send("/app/game.play", {}, JSON.stringify({
+            roomId: currentRoom, playerId: playerId, actionType: 'DRAW_CARD'
+        }));
+    }
+
+    function sayUno() {
+        alert("UNO!");
+        document.getElementById('uno-btn').style.backgroundColor = "#27ae60";
     }
 </script>
 </body>
