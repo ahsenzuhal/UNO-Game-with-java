@@ -11,7 +11,7 @@ public class WildCard extends Card {
 
     @JsonCreator
     public WildCard(@JsonProperty("color") Color color, @JsonProperty("value") int value) {
-        super(Color.WILD, value);
+        super(Color.WILD, value); //Burada renk değişkenine sabit değer atamamamızın nedeni rengin oyuncu tarafından belirlenecek oluşu.
     }
 
     @Override
@@ -20,10 +20,13 @@ public class WildCard extends Card {
     @Override
     public void applyEffect(GameService game, String roomId) {
         if (this.getValue() == 13) { // Wild Draw Four
-            game.penaltyDraw(roomId, 4);
-            game.skipTurn(roomId);
+            game.penaltyDraw(roomId, 4); //sıradaki oyuncuya +4 kart eklendi
+            game.skipTurn(roomId); //oyuncunun sırası geçti.
         }
         // Renk seçimi logic'i frontend tarafında gönderilecek ve
         // GameService.playCard() tarafından currentActiveColor olarak atanacak.
+
+        //Sen Joker attığında ekranında 4 renk çıkar. Sen "Mavi olsun" dersin.
+        //Bu bilgi GameService'e gider ve yerdeki aktif renk artık Mavi olur.
     }
 }

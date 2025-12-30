@@ -5,7 +5,7 @@ import com.example.demo.model.Color;
 import lombok.Data;
 
 @Data
-public class PlayerActionRequest {
+public class PlayerActionRequest { //Frontendden sunucuya gelen mesajlar için.
     private String playerId;
     private ActionType actionType; // PLAY_CARD, DRAW_CARD, SELECT_COLOR
     private Card selectedCard;

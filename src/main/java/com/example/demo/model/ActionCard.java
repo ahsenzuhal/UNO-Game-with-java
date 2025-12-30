@@ -18,12 +18,14 @@ public class ActionCard extends Card {
     }
 
     @Override
-    public void applyEffect(GameService game, String roomId) {
-        if (this.getValue() == 10) { // Skip
-            game.skipTurn(roomId);
-        } else if (this.getValue() == 11) { // Draw Two
-            game.penaltyDraw(roomId, 2);
-            game.skipTurn(roomId); 
+
+    //Bu metodda game parametresinin olmasınınn sebebi
+    public void applyEffect(GameService game, String roomId) { //Bu metot GameService ile konuşarak oyunun akışını değiştiriyor
+        if (this.getValue() == 10) { // eğer değer 10 ise kartı 'Skip' olarak ayarladık. 
+            game.skipTurn(roomId); // bir sonraki oyuncunun sırasını atla
+        } else if (this.getValue() == 11) { //eğer değer 11 ise 'Draw Two' olarak ayarladık.
+            game.penaltyDraw(roomId, 2); //Bir sonraki oyuncuya 2 kart ekler
+            game.skipTurn(roomId);  //ve sıradaki oyuncunun sırası geçer
         }
     }
 }

@@ -9,7 +9,7 @@ import java.util.List;
 
 @Data
 @Builder
-public class GameStatusResponse {
+public class GameStatusResponse { //Sunucudan Frontende giden mesajlar için
     private String currentPlayerId;
     private String currentPlayerName;
     private Card topCard;
