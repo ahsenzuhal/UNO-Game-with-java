@@ -1,5 +1,7 @@
 <<<<<<< HEAD
 # Uno Game
+<img width="980" height="828" alt="image" src="https://github.com/user-attachments/assets/71a8f7b0-5e5a-4a25-aefe-c7cec5451681" />
+
 
 Bu proje, Spring Boot framework'ü kullanılarak geliştirilmiş, Nesne Yönelimli Programlama (OOP) prensiplerini temel alan çok oyunculu bir Uno oyunudur. Gerçek zamanlı oyun akışı için WebSocket (STOMP) mimarisi kullanılmıştır.
  
@@ -44,7 +46,8 @@ Bu proje, Spring Boot framework'ü kullanılarak geliştirilmiş, Nesne Yönelim
 ## Yazılım Mimarisi (UML)
 Projenin sınıf hiyerarşisi ve ilişkileri aşağıdaki UML diyagramında özetlenmiştir:
 
-  
+  <img width="6548" height="7615" alt="UML" src="https://github.com/user-attachments/assets/a4e11bc7-7afb-4c93-9e92-6b46f714538c" />
+
   
   
   
@@ -52,7 +55,7 @@ Projenin sınıf hiyerarşisi ve ilişkileri aşağıdaki UML diyagramında öze
 ## Kurulum
 ### Depoyu klonlayın:
 ```
-git clone [https://github.com/ahsenzuhal/UNO-Game-with-java](https://github.com/ahsenzuhal/UNO-Game-with-java) 
+git clone [https://github.com/ahsenzuhal/UNO-Game-with-java]
 ```
 
 ### Maven ile derleyin:
